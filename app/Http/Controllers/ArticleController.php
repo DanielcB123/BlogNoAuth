@@ -13,6 +13,12 @@ class ArticleController extends Controller
 
     public function getArticles()
     {
+
+        // Laravel Pagination: Laravel's paginate method automatically handles 
+        // the page query parameter when it exists in the request. When Article::paginate(5) 
+        // is called, Laravel internally checks for the page query parameter and fetches the 
+        // appropriate records for that page.
+
         $articles = Article::paginate(5); 
         return response()->json($articles);
     }
@@ -47,16 +53,23 @@ class ArticleController extends Controller
             'excerpt' => 'required',
             'content' => 'required',
         ]);
-
+    
         $article->update($request->all());
-
-        return response()->json($article);
-    }
-
-    public function destroy(Article $article)
-    {
-        $article->delete();
-
+    
         return response()->json(['success' => true]);
     }
+    
+
+    public function destroy(Article $article, Request $request)
+    {
+        $article->delete();
+    
+        if ($request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json(['success' => true]);
+        } else {
+            return redirect()->route('articles.index')->with('success', 'Article deleted successfully');
+        }
+    }
+    
+    
 }
