@@ -12,19 +12,19 @@
                 <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Title</dt>
                     <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                        <input type="text" id="title" value="{{ $article->title }}" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" disabled>
+                        <input type="text" id="title" value="{{ $article->title }}" class="mt-1 block w-full p-x2 py-1 shadow-sm sm:text-sm rounded-md" disabled>
                     </dd>
                 </div>
                 <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Excerpt</dt>
                     <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                        <textarea id="excerpt" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" disabled>{{ $article->excerpt }}</textarea>
+                        <textarea id="excerpt" class="mt-1 block w-full p-x2 py-1 shadow-sm sm:text-sm rounded-md" disabled>{{ $article->excerpt }}</textarea>
                     </dd>
                 </div>
                 <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Content</dt>
                     <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                        <textarea id="content" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" disabled>{{ $article->content }}</textarea>
+                        <textarea id="content" class="mt-1 block w-full p-x2 py-1 shadow-sm sm:text-sm rounded-md" disabled>{{ $article->content }}</textarea>
                     </dd>
                 </div>
             </dl>
@@ -51,36 +51,51 @@ document.addEventListener('DOMContentLoaded', function() {
     const contentField = document.getElementById('content');
 
     editButton.addEventListener('click', function() {
+        // Enable the input fields and add the active class
         titleField.disabled = false;
         excerptField.disabled = false;
         contentField.disabled = false;
+
+        // Add focus styles to all fields
+        titleField.classList.add('border-green-500', 'ring', 'ring-green-200', 'border-2');
+        excerptField.classList.add('border-green-500', 'ring', 'ring-green-200', 'border-2');
+        contentField.classList.add('border-green-500', 'ring', 'ring-green-200', 'border-2');
+
         confirmEditButton.classList.remove('hidden');
         editButton.classList.add('hidden');
     });
 
     confirmEditButton.addEventListener('click', function() {
+        // Gather data from form fields
         const data = {
             title: titleField.value,
             excerpt: excerptField.value,
             content: contentField.value,
             _token: '{{ csrf_token() }}',
-            _method: 'PUT'
+            _method: 'PUT' // Indicate that this is a PUT request
         };
 
+        // Send a POST request to update the article
         fetch('{{ route("articles.update", $article->id) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(data) // Convert data to JSON format
         })
-        .then(response => response.json())
+        .then(response => response.json()) // Parse JSON response
         .then(data => {
             if (data.success) {
+                // Disable the input fields and remove the active class
                 titleField.disabled = true;
                 excerptField.disabled = true;
                 contentField.disabled = true;
+
+                titleField.classList.remove('border-blue-500', 'ring', 'ring-green-200', 'border-2');
+                excerptField.classList.remove('border-blue-500', 'ring', 'ring-green-200', 'border-2');
+                contentField.classList.remove('border-blue-500', 'ring', 'ring-green-200', 'border-2');
+
                 confirmEditButton.classList.add('hidden');
                 editButton.classList.remove('hidden');
                 alert('Article updated successfully');

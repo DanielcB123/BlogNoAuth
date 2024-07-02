@@ -2,22 +2,16 @@
 
 @section('content')
 <div class="container mx-auto my-8 px-0 md:px-4 sm:px-8">
-    <!-- Success message overlay -->
-    <div id="successMessageOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div id="successMessage" class="bg-green-500 text-white p-4 rounded"></div>
-    </div>
 
-    @if (session('success'))
-    <div id="successMessageRedirect" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-green-500 text-white p-4 rounded">
-            {{ session('success') }}
-        </div>
-    </div>
-    @endif
-
-    <h1 class="w-full flex justify-center items-center text-2xl sm:text-4xl font-semibold py-5">Jonah Digital Article Homework</h1>
+    <x-success-message>
+        <x-slot name="message">
+            <!-- The message content will be here -->
+        </x-slot>
+    </x-success-message>
+    
+    <h1 class="w-full flex justify-center items-center text-2xl sm:text-4xl font-semibold py-5">Jonah Digital | Article Homework</h1>
     <div class="flex justify-end mb-4 px-4 md:px-0">
-        <button id="createArticleButton" class="bg-blue-500 text-white px-4 py-2 rounded">New Article</button>
+        <button id="createArticleButton" class="bg-sky-500 text-white px-4 py-2 rounded">New Article</button>
     </div>
     <div class="overflow-x-auto">
         <table id="articlesTable" class="min-w-full bg-white">
@@ -112,104 +106,130 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    loadArticles();
+    // Global variable to keep track of the current page
+    let currentPage = 1;
 
+    // Initial load of articles when the page loads
+    loadArticles(currentPage);
+
+    // Event listener to show the "Create Article" modal when the button is clicked
     document.getElementById('createArticleButton').addEventListener('click', function() {
         document.getElementById('createArticleModal').classList.remove('hidden');
     });
 
+    // Event listener to hide the "Create Article" modal when the cancel button is clicked
     document.getElementById('cancelCreateButton').addEventListener('click', function() {
         document.getElementById('createArticleModal').classList.add('hidden');
     });
 
+    // Event listener to save a new article when the save button is clicked
     document.getElementById('saveArticleButton').addEventListener('click', function() {
+        // Gather data from form fields
         var data = {
             title: document.getElementById('title').value,
             excerpt: document.getElementById('excerpt').value,
             content: document.getElementById('content').value,
-            _token: '{{ csrf_token() }}'
+            _token: '{{ csrf_token() }}' // CSRF token for security
         };
 
+        // Send a POST request to save the article
         fetch('{{ route("articles.store") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(data) // Convert data to JSON format
         })
-        .then(response => response.json())
+        .then(response => response.json()) // Parse JSON response
         .then(data => {
+            // Hide the modal and reset form fields
             document.getElementById('createArticleModal').classList.add('hidden');
             document.getElementById('title').value = '';
             document.getElementById('excerpt').value = '';
             document.getElementById('content').value = '';
-            loadArticles();
+            // Reload articles to include the new article
+            loadArticles(currentPage);
+            // Show success message
             showSuccessMessage('Article created successfully');
         })
         .catch(error => {
-            alert('Error saving article');
+            alert('Error saving article'); // Show error message if request fails
         });
     });
 
+    // Event listener to hide the "Edit Article" modal when the cancel button is clicked
     document.getElementById('cancelEditButton').addEventListener('click', function() {
         document.getElementById('editArticleModal').classList.add('hidden');
     });
 
+    // Event listener to update an article when the update button is clicked
     document.getElementById('updateArticleButton').addEventListener('click', function() {
+        // Gather data from form fields
         var id = document.getElementById('editArticleId').value;
         var data = {
             title: document.getElementById('editTitle').value,
             excerpt: document.getElementById('editExcerpt').value,
             content: document.getElementById('editContent').value,
             _token: '{{ csrf_token() }}',
-            _method: 'PUT'
+            _method: 'PUT' // Indicate that this is a PUT request
         };
 
+        // Send a POST request to update the article
         fetch('/articles/' + id, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(data) // Convert data to JSON format
         })
-        .then(response => response.json())
+        .then(response => response.json()) // Parse JSON response
         .then(data => {
+            // Hide the modal and reload articles to reflect the update
             document.getElementById('editArticleModal').classList.add('hidden');
-            loadArticles();
+            loadArticles(currentPage); // Use current page to reload articles
+            // Show success message
             showSuccessMessage('Article updated successfully');
         })
         .catch(error => {
-            alert('Error updating article');
+            alert('Error updating article'); // Show error message if request fails
         });
     });
 
+    // Event delegation for the articles table to handle edit, delete, and show actions
     document.getElementById('articlesTable').addEventListener('click', function(event) {
+        // Handle edit button click
         if (event.target.classList.contains('editArticleButton')) {
-            var id = event.target.dataset.id;
+            var id = event.target.dataset.id; // Get article ID from data attribute
+            // Fetch article data to populate the edit form
             fetch('/articles/' + id + '/edit')
-            .then(response => response.json())
+            .then(response => response.json()) // Parse JSON response
             .then(data => {
+                // Populate form fields with article data
                 document.getElementById('editArticleId').value = data.id;
                 document.getElementById('editTitle').value = data.title;
                 document.getElementById('editExcerpt').value = data.excerpt;
                 document.getElementById('editContent').value = data.content;
+                // Show the edit modal
                 document.getElementById('editArticleModal').classList.remove('hidden');
             })
             .catch(error => {
                 console.log(error);
-                alert('Error loading article');
+                alert('Error loading article'); // Show error message if request fails
             });
-        } else if (event.target.classList.contains('deleteArticleButton')) {
-            var id = event.target.dataset.id;
+        }
+        // Handle delete button click
+        else if (event.target.classList.contains('deleteArticleButton')) {
+            var id = event.target.dataset.id; // Get article ID from data attribute
             if (confirm('Are you sure you want to delete this article?')) {
+                // Send a DELETE request to delete the article
                 fetch(`/articles/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'X-Requested-With': 'XMLHttpRequest'  // Custom header to indicate AJAX request
+                        'X-Requested-With': 'XMLHttpRequest' // Custom header to indicate AJAX request
                     }
                 })
                 .then(response => {
@@ -220,28 +240,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .then(data => {
                     if (data.success) {
-                        loadArticles();
+                        // Reload articles to reflect the deletion
+                        loadArticles(currentPage); // Use current page to reload articles
+                        // Show success message
                         showSuccessMessage('Article deleted successfully');
                     }
                 })
                 .catch(error => {
-                    alert('Error deleting article');
+                    alert('Error deleting article'); // Show error message if request fails
                     console.error('There was a problem with the fetch operation:', error);
                 });
             }
-        } else if (event.target.classList.contains('showArticleButton')) {
-            var id = event.target.dataset.id;
-            window.location.href = `/articles/${id}`;
+        }
+        // Handle show button click
+        else if (event.target.classList.contains('showArticleButton')) {
+            var id = event.target.dataset.id; // Get article ID from data attribute
+            window.location.href = `/articles/${id}`; // Redirect to the article show page
         }
     });
 
+    // Function to load articles with pagination
     function loadArticles(page = 1) {
+        currentPage = page; // Update the global currentPage variable
+        // Send a GET request to fetch articles with pagination
         fetch('{{ route("articles.data") }}' + `?page=${page}`)
-        .then(response => response.json())
+        .then(response => response.json()) // Parse JSON response
         .then(data => {
             var articlesTableBody = document.querySelector('#articlesTable tbody');
-            articlesTableBody.innerHTML = '';
+            articlesTableBody.innerHTML = ''; // Clear existing table data
             data.data.forEach(article => {
+                // Create a new table row for each article
                 var row = document.createElement('tr');
                 row.innerHTML = `
                     <td class="border px-1 sm:px-4 py-2 text-xs md:text-base"><p class="flex justify-center">${article.id}</p></td>
@@ -249,24 +277,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${article.excerpt}</td>
                     <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${article.content}</td>
                     <td class="border px-1 sm:px-4 py-2">
-                        <button class="showArticleButton text-blue-500" data-id="${article.id}">Show</button><br>
-                        <button class="editArticleButton text-yellow-500" data-id="${article.id}">Edit</button><br>
-                        <button class="deleteArticleButton text-red-500" data-id="${article.id}">Delete</button>
+                        <button class="showArticleButton font-semibold text-sky-500 hover:text-sky-600" data-id="${article.id}">Show</button><br>
+                        <button class="editArticleButton font-semibold text-yellow-500 hover:text-yellow-600" data-id="${article.id}">Edit</button><br>
+                        <button class="deleteArticleButton font-semibold text-red-500 hover:text-red-600" data-id="${article.id}">Delete</button>
                     </td>
                 `;
-                articlesTableBody.appendChild(row);
+                articlesTableBody.appendChild(row); // Add row to the table body
             });
+            // Render pagination controls
             renderPagination(data);
         })
         .catch(error => {
-            alert('Error loading articles');
+            alert('Error loading articles'); // Show error message if request fails
         });
     }
 
+    // Function to render pagination controls
     function renderPagination(data) {
         var paginationControls = document.getElementById('paginationControls');
-        paginationControls.innerHTML = '';
+        paginationControls.innerHTML = ''; // Clear existing pagination controls
 
+        // Create "Previous" button if not on the first page
         if (data.current_page > 1) {
             let prevButton = document.createElement('button');
             prevButton.textContent = 'Previous';
@@ -277,6 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
             paginationControls.appendChild(prevButton);
         }
 
+        // Create page number buttons
         for (let page = 1; page <= data.last_page; page++) {
             let pageButton = document.createElement('button');
             pageButton.textContent = page;
@@ -290,6 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
             paginationControls.appendChild(pageButton);
         }
 
+        // Create "Next" button if not on the last page
         if (data.current_page < data.last_page) {
             let nextButton = document.createElement('button');
             nextButton.textContent = 'Next';
@@ -301,6 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Hide success message after a few seconds
     const successMessage = document.getElementById('successMessageRedirect');
     if (successMessage) {
         setTimeout(() => {
@@ -308,6 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
+    // Function to show success message overlay
     function showSuccessMessage(message) {
         const successMessageOverlay = document.getElementById('successMessageOverlay');
         const successMessage = document.getElementById('successMessage');
@@ -319,4 +354,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
 @endsection
