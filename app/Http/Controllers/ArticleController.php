@@ -125,7 +125,7 @@ class ArticleController extends Controller
     }
     
     /**
-     * Remove the specified article from the database.
+     * Remove the specified article from the database
      *
      * @param  \App\Models\Article  $article
      * @param  \Illuminate\Http\Request  $request
