@@ -97,12 +97,21 @@ class ArticleController extends Controller
      */
     public function update(Request $request, Article $article)
     {
-        $request->validate([
+
+        $validator = \Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'excerpt' => 'required|string',
-            'content' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Validate the image if it exists
+            'content' => 'image|mimes:jpeg,png,jpg,gif|max:5120', // Validate the image if it exists
         ]);
     
+        if ($validator->fails()) {
+            \Log::error('Validation Errors: ', $validator->errors()->toArray());
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 400);
+        }
+    
+
+
+
         // Handle the file upload if a new image is provided
         if ($request->hasFile('content')) {
             // Delete the old image
@@ -116,16 +125,18 @@ class ArticleController extends Controller
             $article->content = 'http://127.0.0.1:8000' . Storage::url($path); // Update with the new URL
         }
     
+
         // Update other fields
         $article->title = $request->title;
         $article->excerpt = $request->excerpt;
         $article->save();
     
+
         return response()->json(['success' => true, 'article' => $article], 200);
     }
     
     /**
-     * Remove the specified article from the database.
+     * Remove the specified article from the database
      *
      * @param  \App\Models\Article  $article
      * @param  \Illuminate\Http\Request  $request
