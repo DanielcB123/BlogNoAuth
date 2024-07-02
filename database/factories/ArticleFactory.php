@@ -14,7 +14,7 @@ class ArticleFactory extends Factory
         return [
             'title' => $this->faker->sentence,
             'excerpt' => $this->faker->paragraph,
-            'content' => $this->faker->text,
+            'content' => $this->faker->imageUrl($width = 640, $height = 480),
         ];
     }
 }

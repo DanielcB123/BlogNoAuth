@@ -3,6 +3,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
 
 class ArticleController extends Controller
 {
@@ -39,18 +41,27 @@ class ArticleController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the incoming request data
         $request->validate([
-            'title' => 'required',
-            'excerpt' => 'required',
-            'content' => 'required',
+            'title' => 'required|string|max:255',
+            'excerpt' => 'required|string',
+            'content' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate the image
         ]);
 
-        // Create a new article using the validated data
-        $article = Article::create($request->all());
+        // Handle the file upload
+        if ($request->hasFile('content')) {
+            $path = $request->file('content')->store('public/articles'); // Store the image
 
-        // Return the created article as a JSON response
-        return response()->json($article);
+            // Create the article
+            $article = Article::create([
+                'title' => $request->title,
+                'excerpt' => $request->excerpt,
+                'content' => 'http://127.0.0.1:8000' . Storage::url($path), // Store the URL with base URL
+            ]);
+
+            return response()->json($article, 201);
+        }
+
+        return response()->json(['error' => 'File not uploaded'], 400);
     }
 
     /**
@@ -86,20 +97,33 @@ class ArticleController extends Controller
      */
     public function update(Request $request, Article $article)
     {
-        // Validate the incoming request data
         $request->validate([
-            'title' => 'required',
-            'excerpt' => 'required',
-            'content' => 'required',
+            'title' => 'required|string|max:255',
+            'excerpt' => 'required|string',
+            'content' => 'image|mimes:jpeg,png,jpg,gif|max:2048', // Validate the image if it exists
         ]);
-
-        // Update the article using the validated data
-        $article->update($request->all());
-
-        // Return a success message as a JSON response
-        return response()->json(['success' => true]);
+    
+        // Handle the file upload if a new image is provided
+        if ($request->hasFile('content')) {
+            // Delete the old image
+            if ($article->content) {
+                $oldPath = str_replace('/storage', 'public', parse_url($article->content, PHP_URL_PATH));
+                Storage::delete($oldPath);
+            }
+    
+            // Store the new image
+            $path = $request->file('content')->store('public/articles');
+            $article->content = 'http://127.0.0.1:8000' . Storage::url($path); // Update with the new URL
+        }
+    
+        // Update other fields
+        $article->title = $request->title;
+        $article->excerpt = $request->excerpt;
+        $article->save();
+    
+        return response()->json(['success' => true, 'article' => $article], 200);
     }
-
+    
     /**
      * Remove the specified article from the database.
      *

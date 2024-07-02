@@ -24,7 +24,8 @@
                 <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Content</dt>
                     <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                        <textarea id="content" class="mt-1 block w-full p-x2 py-1 shadow-sm sm:text-sm rounded-md" disabled>{{ $article->content }}</textarea>
+                        <img id="contentImage" src="{{ $article->content }}" alt="Article Image" class="mt-2 mb-5" style="max-width: 100%; height: auto;">
+                        <input type="file" id="newContent" name="content" accept="image/*" class="mt-1 block w-full shadow-sm sm:text-sm rounded-md hidden">
                     </dd>
                 </div>
             </dl>
@@ -48,41 +49,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmEditButton = document.getElementById('confirmEditButton');
     const titleField = document.getElementById('title');
     const excerptField = document.getElementById('excerpt');
-    const contentField = document.getElementById('content');
+    const newContentField = document.getElementById('newContent');
+    const contentImage = document.getElementById('contentImage');
 
     editButton.addEventListener('click', function() {
         // Enable the input fields and add the active class
         titleField.disabled = false;
         excerptField.disabled = false;
-        contentField.disabled = false;
+        newContentField.classList.remove('hidden');
 
         // Add focus styles to all fields
         titleField.classList.add('border-green-500', 'ring', 'ring-green-200', 'border-2');
         excerptField.classList.add('border-green-500', 'ring', 'ring-green-200', 'border-2');
-        contentField.classList.add('border-green-500', 'ring', 'ring-green-200', 'border-2');
 
         confirmEditButton.classList.remove('hidden');
         editButton.classList.add('hidden');
     });
 
     confirmEditButton.addEventListener('click', function() {
-        // Gather data from form fields
-        const data = {
-            title: titleField.value,
-            excerpt: excerptField.value,
-            content: contentField.value,
-            _token: '{{ csrf_token() }}',
-            _method: 'PUT' // Indicate that this is a PUT request
-        };
+        // Create a FormData object to handle file uploads
+        const formData = new FormData();
+        formData.append('title', titleField.value);
+        formData.append('excerpt', excerptField.value);
+        if (newContentField.files.length > 0) {
+            formData.append('content', newContentField.files[0]);
+        }
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('_method', 'PUT');
 
         // Send a POST request to update the article
         fetch('{{ route("articles.update", $article->id) }}', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify(data) // Convert data to JSON format
+            body: formData // Use FormData to send the file
         })
         .then(response => response.json()) // Parse JSON response
         .then(data => {
@@ -90,16 +88,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Disable the input fields and remove the active class
                 titleField.disabled = true;
                 excerptField.disabled = true;
-                contentField.disabled = true;
+                newContentField.classList.add('hidden');
 
-                titleField.classList.remove('border-blue-500', 'ring', 'ring-green-200', 'border-2');
-                excerptField.classList.remove('border-blue-500', 'ring', 'ring-green-200', 'border-2');
-                contentField.classList.remove('border-blue-500', 'ring', 'ring-green-200', 'border-2');
+                titleField.classList.remove('border-green-500', 'ring', 'ring-green-200', 'border-2');
+                excerptField.classList.remove('border-green-500', 'ring', 'ring-green-200', 'border-2');
 
                 confirmEditButton.classList.add('hidden');
                 editButton.classList.remove('hidden');
                 alert('Article updated successfully');
+
+                // Update the image source if a new image was uploaded
+                if (data.article.content) {
+                    contentImage.src = data.article.content;
+                }
             } else {
+                console.log(data);
                 alert('Error updating article');
             }
         })
@@ -108,6 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Error updating article');
         });
     });
+
 });
 </script>
 @endsection

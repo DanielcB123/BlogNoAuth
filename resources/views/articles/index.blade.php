@@ -53,7 +53,7 @@
                                     <label for="excerpt" class="block text-sm font-medium text-gray-700">Excerpt</label>
                                     <textarea name="excerpt" id="excerpt" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md mb-5"></textarea>
                                     <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-                                    <textarea name="content" id="content" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"></textarea>
+                                    <input type="file" name="content" id="" class="mt-1 h-24 block w-full shadow-sm text-xs md:text-base border-gray-300 rounded-md"></input>
                                 </div>
                             </div>
                         </div>
@@ -75,7 +75,7 @@
             </div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">​</span>
             <div class="inline-block align-bottom w-full bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <form id="editArticleForm">
+                <form id="editArticleForm" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     <input type="hidden" id="editArticleId">
@@ -88,8 +88,10 @@
                                     <input type="text" name="title" id="editTitle" class="mt-1 h-24 block w-full shadow-sm text-xs md:text-base border-gray-300 rounded-md mb-5">
                                     <label for="editExcerpt" class="block text-sm font-medium text-gray-700">Excerpt</label>
                                     <textarea name="excerpt" id="editExcerpt" class="mt-1 h-24 block w-full shadow-sm text-xs md:text-base border-gray-300 rounded-md mb-5"></textarea>
-                                    <label for="editContent" class="block text-sm font-medium text-gray-700">Content</label>
-                                    <textarea name="content" id="editContent" class="mt-1 h-24 block w-full shadow-sm text-xs md:text-base border-gray-300 rounded-md"></textarea>
+                                    <label for="editContent" class="block text-sm font-medium text-gray-700">Current Image</label>
+                                    <img id="currentContentImage" src="" alt="Current Image" class="mt-2 mb-5" style="max-width: 100%; height: auto;">
+                                    <label for="newContent" class="block text-sm font-medium text-gray-700">Change Image</label>
+                                    <input type="file" name="content" id="newContent" accept="image/*" class="mt-1 block w-full shadow-sm text-xs md:text-base border-gray-300 rounded-md">
                                 </div>
                             </div>
                         </div>
@@ -102,6 +104,8 @@
             </div>
         </div>
     </div>
+
+
 </div>
 
 <script>
@@ -125,29 +129,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event listener to save a new article when the save button is clicked
     document.getElementById('saveArticleButton').addEventListener('click', function() {
         // Gather data from form fields
-        var data = {
-            title: document.getElementById('title').value,
-            excerpt: document.getElementById('excerpt').value,
-            content: document.getElementById('content').value,
-            _token: '{{ csrf_token() }}' // CSRF token for security
-        };
+        var form = document.getElementById('createArticleForm');
+        var formData = new FormData(form); // Use FormData to handle file uploads
 
         // Send a POST request to save the article
         fetch('{{ route("articles.store") }}', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // CSRF token for security
             },
-            body: JSON.stringify(data) // Convert data to JSON format
+            body: formData // Use FormData to send the file
         })
         .then(response => response.json()) // Parse JSON response
         .then(data => {
             // Hide the modal and reset form fields
             document.getElementById('createArticleModal').classList.add('hidden');
-            document.getElementById('title').value = '';
-            document.getElementById('excerpt').value = '';
-            document.getElementById('content').value = '';
+            form.reset();
             // Reload articles to include the new article
             loadArticles(currentPage);
             // Show success message
@@ -163,26 +160,42 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('editArticleModal').classList.add('hidden');
     });
 
+
+
+
+
+
+
+
+
+    // Function to populate the edit modal with current article data
+    function populateEditModal(article) {
+        document.getElementById('editArticleId').value = article.id;
+        document.getElementById('editTitle').value = article.title;
+        document.getElementById('editExcerpt').value = article.excerpt;
+        document.getElementById('currentContentImage').src = article.content;
+        document.getElementById('newContent').value = ''; // Clear the file input
+    }
+
+    // Function to show the edit modal
+    function showEditModal(article) {
+        populateEditModal(article);
+        document.getElementById('editArticleModal').classList.remove('hidden');
+    }
+
     // Event listener to update an article when the update button is clicked
     document.getElementById('updateArticleButton').addEventListener('click', function() {
-        // Gather data from form fields
         var id = document.getElementById('editArticleId').value;
-        var data = {
-            title: document.getElementById('editTitle').value,
-            excerpt: document.getElementById('editExcerpt').value,
-            content: document.getElementById('editContent').value,
-            _token: '{{ csrf_token() }}',
-            _method: 'PUT' // Indicate that this is a PUT request
-        };
+        var form = document.getElementById('editArticleForm');
+        var formData = new FormData(form); // Use FormData to handle file uploads
 
         // Send a POST request to update the article
         fetch('/articles/' + id, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // CSRF token for security
             },
-            body: JSON.stringify(data) // Convert data to JSON format
+            body: formData // Use FormData to send the file
         })
         .then(response => response.json()) // Parse JSON response
         .then(data => {
@@ -197,30 +210,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+
+
+
+
+
+
+
+
+
+
+
+
     // Event delegation for the articles table to handle edit, delete, and show actions
     document.getElementById('articlesTable').addEventListener('click', function(event) {
-        // Handle edit button click
-        if (event.target.classList.contains('editArticleButton')) {
-            var id = event.target.dataset.id; // Get article ID from data attribute
-            // Fetch article data to populate the edit form
-            fetch('/articles/' + id + '/edit')
-            .then(response => response.json()) // Parse JSON response
-            .then(data => {
-                // Populate form fields with article data
-                document.getElementById('editArticleId').value = data.id;
-                document.getElementById('editTitle').value = data.title;
-                document.getElementById('editExcerpt').value = data.excerpt;
-                document.getElementById('editContent').value = data.content;
-                // Show the edit modal
-                document.getElementById('editArticleModal').classList.remove('hidden');
-            })
-            .catch(error => {
-                console.log(error);
-                alert('Error loading article'); // Show error message if request fails
-            });
-        }
         // Handle delete button click
-        else if (event.target.classList.contains('deleteArticleButton')) {
+        if (event.target.classList.contains('deleteArticleButton')) {
             var id = event.target.dataset.id; // Get article ID from data attribute
             if (confirm('Are you sure you want to delete this article?')) {
                 // Send a DELETE request to delete the article
@@ -259,6 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+
     // Function to load articles with pagination
     function loadArticles(page = 1) {
         currentPage = page; // Update the global currentPage variable
@@ -271,11 +277,21 @@ document.addEventListener('DOMContentLoaded', function() {
             data.data.forEach(article => {
                 // Create a new table row for each article
                 var row = document.createElement('tr');
+
+                // Check if content is a valid URL (basic check)
+                let contentHtml = '';
+                try {
+                    new URL(article.content);
+                    contentHtml = `<img src="${article.content}" alt="Article Image" style="max-width: 100%; height: auto;">`;
+                } catch (_) {
+                    contentHtml = article.content;
+                }
+
                 row.innerHTML = `
                     <td class="border px-1 sm:px-4 py-2 text-xs md:text-base"><p class="flex justify-center">${article.id}</p></td>
                     <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${article.title}</td>
                     <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${article.excerpt}</td>
-                    <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${article.content}</td>
+                    <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${contentHtml}</td>
                     <td class="border px-1 sm:px-4 py-2">
                         <button class="showArticleButton font-semibold text-sky-500 hover:text-sky-600" data-id="${article.id}">Show</button><br>
                         <button class="editArticleButton font-semibold text-yellow-500 hover:text-yellow-600" data-id="${article.id}">Edit</button><br>
@@ -283,6 +299,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     </td>
                 `;
                 articlesTableBody.appendChild(row); // Add row to the table body
+
+                // Attach event listener to the edit button
+                row.querySelector('.editArticleButton').addEventListener('click', function() {
+                    showEditModal({
+                        id: article.id,
+                        title: article.title,
+                        excerpt: article.excerpt,
+                        content: article.content
+                    });
+                });
             });
             // Render pagination controls
             renderPagination(data);
