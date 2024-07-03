@@ -38,7 +38,8 @@
         <div id="comments">
             @foreach($article->comments as $comment)
             <div class="bg-gray-100 p-4 rounded-lg mb-4">
-                {{ $comment->body }}
+                <div class="text-sm text-gray-500">{{ $comment->created_at->format('m-d-Y h:i A') }}</div>
+                <div>{{ $comment->body }}</div>
             </div>
             @endforeach
         </div>
