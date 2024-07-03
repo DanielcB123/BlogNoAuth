@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('content')
-<div class="container mx-auto mt-8">
+<div class="container mx-auto my-12">
     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
             <h1 class="text-xl mb-2 leading-6 font-medium text-gray-900">Article ID: {{ $article->id }}</h1>
