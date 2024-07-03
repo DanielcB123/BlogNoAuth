@@ -8,11 +8,22 @@
             <!-- The message content will be here -->
         </x-slot>
     </x-success-message>
+
+
+
+
+
+
+
     
     <h1 class="w-full flex justify-center items-center text-2xl sm:text-4xl font-semibold py-5">Jonah Digital | Article Homework</h1>
+
+
     <div class="flex justify-end mb-4 px-4 md:px-0">
         <button id="createArticleButton" class="bg-sky-500 text-white px-4 py-2 rounded">New Article</button>
     </div>
+
+
     <div class="overflow-x-auto">
         <table id="articlesTable" class="min-w-full bg-white">
             <thead class="bg-gray-800 text-white">
@@ -29,15 +40,29 @@
             </tbody>
         </table>
     </div>
+
+
+
+
+
+
+    
     <div id="paginationControls" class="mt-4 flex justify-center space-x-2">
         <!-- Pagination links will be added here -->
     </div>
 
+
+
+
+
+
+
+    
     <!-- Create Article Modal -->
     <div id="createArticleModal" class="fixed z-10 inset-0 overflow-y-auto hidden">
         <div class="flex items-end justify-center min-h-screen pb-48 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                <div class="absolute inset-0 bg-black opacity-75"></div>
             </div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">​</span>
             <div class="inline-block align-bottom w-full bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
@@ -67,11 +92,18 @@
         </div>
     </div>
 
+
+
+
+
+
+
+    
     <!-- Edit Article Modal -->
     <div id="editArticleModal" class="fixed z-10 inset-0 overflow-y-auto hidden">
         <div class="flex items-end justify-center min-h-screen pb-36 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                <div class="absolute inset-0 bg-black opacity-75"></div>
             </div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">​</span>
             <div class="inline-block align-bottom w-full bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
@@ -105,16 +137,23 @@
         </div>
     </div>
 
-
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
     // Global variable to keep track of the current page
     let currentPage = 1;
 
     // Initial load of articles when the page loads
     loadArticles(currentPage);
+
+
+
+
+
+
+
 
     // Event listener to show the "Create Article" modal when the button is clicked
     document.getElementById('createArticleButton').addEventListener('click', function() {
@@ -126,6 +165,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('createArticleModal').classList.add('hidden');
     });
 
+
+
+
+
+
+
+    
     // Event listener to save a new article when the save button is clicked
     document.getElementById('saveArticleButton').addEventListener('click', function() {
         // Gather data from form fields
@@ -155,18 +201,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+
+
+
+
+
+
+    
     // Event listener to hide the "Edit Article" modal when the cancel button is clicked
     document.getElementById('cancelEditButton').addEventListener('click', function() {
         document.getElementById('editArticleModal').classList.add('hidden');
     });
-
-
-
-
-
-
-
-
 
     // Function to populate the edit modal with current article data
     function populateEditModal(article) {
@@ -216,12 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
-
-
-
-
-
+    
     // Event delegation for the articles table to handle edit, delete, and show actions
     document.getElementById('articlesTable').addEventListener('click', function(event) {
         // Handle delete button click
@@ -265,6 +305,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
+
+
+
+
+
+    
     // Function to load articles with pagination
     function loadArticles(page = 1) {
         currentPage = page; // Update the global currentPage variable
@@ -278,9 +324,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Create a new table row for each article
                 var row = document.createElement('tr');
 
-                // Check if content is a valid URL (basic check)
+                // Check if content is a valid URL
                 let contentHtml = '';
                 try {
+
+                    // This line attempts to create a new URL object from article.content. If article.content is a valid URL, the new URL() constructor will succeed without throwing an error. If it's not a valid URL, the constructor will throw an error.
                     new URL(article.content);
                     contentHtml = `<img src="${article.content}" alt="Article Image" style="max-width: 100%; height: auto;">`;
                 } catch (_) {
@@ -318,6 +366,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+
+
+
+
+
+
+    
     // Function to render pagination controls
     function renderPagination(data) {
         var paginationControls = document.getElementById('paginationControls');
@@ -360,6 +415,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+
+
+
+
+
+
+    
     // Hide success message after a few seconds
     const successMessage = document.getElementById('successMessageRedirect');
     if (successMessage) {
@@ -379,6 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 });
+
 </script>
 
 @endsection

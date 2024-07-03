@@ -23,8 +23,8 @@
                 </div>
                 <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                     <dt class="text-sm font-medium text-gray-500">Content</dt>
-                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                        <img id="contentImage" src="{{ $article->content }}" alt="Article Image" class="mt-2 mb-5" style="max-width: 100%; height: auto;">
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex justify-center">
+                        <img id="contentImage" src="{{ $article->content }}" alt="Article Image" class="mt-2 mb-5" style="max-width: 50%; height: auto;">
                         <input type="file" id="newContent" name="content" accept="image/*" class="mt-1 block w-full shadow-sm sm:text-sm rounded-md hidden">
                     </dd>
                 </div>
@@ -45,6 +45,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
     const editButton = document.getElementById('editButton');
     const confirmEditButton = document.getElementById('confirmEditButton');
     const titleField = document.getElementById('title');
@@ -52,6 +53,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const newContentField = document.getElementById('newContent');
     const contentImage = document.getElementById('contentImage');
 
+
+
+
+
+
+
+    
     editButton.addEventListener('click', function() {
         // Enable the input fields and add the active class
         titleField.disabled = false;
@@ -66,6 +74,13 @@ document.addEventListener('DOMContentLoaded', function() {
         editButton.classList.add('hidden');
     });
 
+
+
+
+
+
+
+    
     confirmEditButton.addEventListener('click', function() {
         // Create a FormData object to handle file uploads
         const formData = new FormData();

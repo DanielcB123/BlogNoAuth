@@ -44,7 +44,7 @@ class ArticleController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'excerpt' => 'required|string',
-            'content' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate the image
+            'content' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // Validate the image
         ]);
 
         // Handle the file upload
@@ -101,7 +101,7 @@ class ArticleController extends Controller
         $validator = \Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'excerpt' => 'required|string',
-            'content' => 'image|mimes:jpeg,png,jpg,gif|max:5120', // Validate the image if it exists
+            'content' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
     
         if ($validator->fails()) {

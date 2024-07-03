@@ -9,9 +9,8 @@ Route::get('/', function () {
 });
 
 // Register resource routes for the ArticleController, except for 'edit', and 'index' actions
+// The included methods are: 'create', 'store', 'show', 'update', and 'destroy'.
 Route::resource('articles', ArticleController::class)->except(['edit', 'index']);
-// Route::resource('articles', ArticleController::class);
-
 
 // Route for displaying the articles index page
 Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
