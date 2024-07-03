@@ -25,7 +25,7 @@
                     <dt class="text-sm font-medium text-gray-500">Content</dt>
                     <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 flex justify-center">
                         <img id="contentImage" src="{{ $article->content }}" alt="Article Image" class="mt-2 mb-5" style="max-width: 50%; height: auto;">
-                        <input type="file" id="newContent" name="content" accept="image/*" class="mt-1 block w-full shadow-sm sm:text-sm rounded-md hidden">
+                        <input type="file" id="newContent" name="content" accept="image/*" class="mt-2 px-4 block w-full shadow-sm sm:text-sm rounded-md hidden">
                     </dd>
                 </div>
             </dl>
@@ -43,15 +43,23 @@
     </div>
 </div>
 
+
+
+
+
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
-    const editButton = document.getElementById('editButton');
-    const confirmEditButton = document.getElementById('confirmEditButton');
-    const titleField = document.getElementById('title');
-    const excerptField = document.getElementById('excerpt');
-    const newContentField = document.getElementById('newContent');
-    const contentImage = document.getElementById('contentImage');
+
+    // DOM elements for editing an article
+    const editButton = document.getElementById('editButton'); // Button to enable edit mode
+    const confirmEditButton = document.getElementById('confirmEditButton'); // Button to confirm the edit
+    const titleField = document.getElementById('title'); // Input field for the article title
+    const excerptField = document.getElementById('excerpt'); // Textarea for the article excerpt
+    const newContentField = document.getElementById('newContent'); // Input field for uploading a new image
+    const contentImage = document.getElementById('contentImage'); // Image element to display the current article content image
+
 
 
 
@@ -73,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmEditButton.classList.remove('hidden');
         editButton.classList.add('hidden');
     });
+
 
 
 

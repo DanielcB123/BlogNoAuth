@@ -18,6 +18,13 @@ class ArticleController extends Controller
         return view('articles.index');
     }
 
+
+
+
+
+
+
+    
     /**
      * Fetch a paginated list of articles and return as JSON.
      *
@@ -25,7 +32,7 @@ class ArticleController extends Controller
      */
     public function getArticles()
     {
-        // Laravel Pagination: Laravel's paginate method automatically handles 
+        // Laravel's paginate method automatically handles 
         // the page query parameter when it exists in the request. When Article::paginate(5) 
         // is called, Laravel internally checks for the page query parameter and fetches the 
         // appropriate records for that page.
@@ -33,6 +40,13 @@ class ArticleController extends Controller
         return response()->json($articles);
     }
 
+
+
+
+
+
+
+    
     /**
      * Store a new article in the database.
      *
@@ -64,6 +78,13 @@ class ArticleController extends Controller
         return response()->json(['error' => 'File not uploaded'], 400);
     }
 
+
+
+
+
+
+
+    
     /**
      * Display the specified article.
      *
@@ -76,6 +97,13 @@ class ArticleController extends Controller
         return view('articles.show', compact('article'));
     }
 
+
+
+
+
+
+
+    
     /**
      * Return the specified article data as JSON for editing.
      *
@@ -88,6 +116,13 @@ class ArticleController extends Controller
         return response()->json($article);
     }
 
+
+
+
+
+
+
+    
     /**
      * Update the specified article in the database.
      *
@@ -127,6 +162,13 @@ class ArticleController extends Controller
 
         return response()->json(['success' => true, 'article' => $article], 200);
     }
+    
+
+
+
+
+
+
     
     /**
      * Remove the specified article from the database

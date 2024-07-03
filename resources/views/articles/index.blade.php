@@ -74,11 +74,11 @@
                                 <h3 class="text-lg leading-6 font-medium text-gray-900">Create Article</h3>
                                 <div class="mt-2">
                                     <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-                                    <input type="text" name="title" id="title" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md mb-5">
+                                    <input type="text" name="title" id="title" class="mt-1 p-2 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md mb-5">
                                     <label for="excerpt" class="block text-sm font-medium text-gray-700">Excerpt</label>
-                                    <textarea name="excerpt" id="excerpt" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md mb-5"></textarea>
+                                    <textarea name="excerpt" id="excerpt" class="mt-1 p-2 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md mb-5"></textarea>
                                     <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-                                    <input type="file" name="content" id="" class="mt-1 h-24 block w-full shadow-sm text-xs md:text-base border-gray-300 rounded-md"></input>
+                                    <input type="file" name="content" id="" class="mt-1 p-2 h-24 block w-full shadow-sm text-xs md:text-base border-gray-300 rounded-md"></input>
                                 </div>
                             </div>
                         </div>
@@ -117,13 +117,13 @@
                                 <h3 class="text-lg leading-6 font-medium text-gray-900">Edit Article</h3>
                                 <div class="mt-2">
                                     <label for="editTitle" class="block text-sm font-medium text-gray-700">Title</label>
-                                    <input type="text" name="title" id="editTitle" class="mt-1 h-24 block w-full shadow-sm text-xs md:text-base border-gray-300 rounded-md mb-5">
+                                    <input type="text" name="title" id="editTitle" class="mt-1 p-2 h-8 block w-full shadow-sm text-xs md:text-base border-gray-300 rounded-md mb-5">
                                     <label for="editExcerpt" class="block text-sm font-medium text-gray-700">Excerpt</label>
-                                    <textarea name="excerpt" id="editExcerpt" class="mt-1 h-24 block w-full shadow-sm text-xs md:text-base border-gray-300 rounded-md mb-5"></textarea>
+                                    <textarea name="excerpt" id="editExcerpt" class="mt-1 p-2 h-24 block w-full shadow-sm text-xs md:text-base border-gray-300 rounded-md mb-5"></textarea>
                                     <label for="editContent" class="block text-sm font-medium text-gray-700">Current Image</label>
                                     <img id="currentContentImage" src="" alt="Current Image" class="mt-2 mb-5" style="max-width: 100%; height: auto;">
                                     <label for="newContent" class="block text-sm font-medium text-gray-700">Change Image</label>
-                                    <input type="file" name="content" id="newContent" accept="image/*" class="mt-1 block w-full shadow-sm text-xs md:text-base border-gray-300 rounded-md">
+                                    <input type="file" name="content" id="newContent" accept="image/*" class="mt-1 p-2 block w-full shadow-sm text-xs md:text-base border-gray-300 rounded-md">
                                 </div>
                             </div>
                         </div>
@@ -170,7 +170,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
+    // ***************************************************
+    //
+    //  CREATE NEW ARTICLE
+    //
+    // ***************************************************
     
     // Event listener to save a new article when the save button is clicked
     document.getElementById('saveArticleButton').addEventListener('click', function() {
@@ -207,11 +211,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-    
-    // Event listener to hide the "Edit Article" modal when the cancel button is clicked
-    document.getElementById('cancelEditButton').addEventListener('click', function() {
-        document.getElementById('editArticleModal').classList.add('hidden');
-    });
+    // ***************************************************
+    //
+    //  EDIT ARTICLE
+    //
+    // ***************************************************
 
     // Function to populate the edit modal with current article data
     function populateEditModal(article) {
@@ -255,61 +259,61 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-
-
-
-
-
-
-    
-    // Event delegation for the articles table to handle edit, delete, and show actions
-    document.getElementById('articlesTable').addEventListener('click', function(event) {
-        // Handle delete button click
-        if (event.target.classList.contains('deleteArticleButton')) {
-            var id = event.target.dataset.id; // Get article ID from data attribute
-            if (confirm('Are you sure you want to delete this article?')) {
-                // Send a DELETE request to delete the article
-                fetch(`/articles/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'X-Requested-With': 'XMLHttpRequest' // Custom header to indicate AJAX request
-                    }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    }
-                    throw new Error('Network response was not ok.');
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Reload articles to reflect the deletion
-                        loadArticles(currentPage); // Use current page to reload articles
-                        // Show success message
-                        showSuccessMessage('Article deleted successfully');
-                    }
-                })
-                .catch(error => {
-                    alert('Error deleting article'); // Show error message if request fails
-                    console.error('There was a problem with the fetch operation:', error);
-                });
-            }
-        }
-        // Handle show button click
-        else if (event.target.classList.contains('showArticleButton')) {
-            var id = event.target.dataset.id; // Get article ID from data attribute
-            window.location.href = `/articles/${id}`; // Redirect to the article show page
-        }
+    // Event listener to hide the "Edit Article" modal when the cancel button is clicked
+    document.getElementById('cancelEditButton').addEventListener('click', function() {
+        document.getElementById('editArticleModal').classList.add('hidden');
     });
 
 
 
 
 
+    // ***************************************************
+    //
+    //  DELETE ARTICLE
+    //
+    // ***************************************************
+    
+    function deleteArticle(id) {
+        if (confirm('Are you sure you want to delete this article?')) {
+            // Send a DELETE request to delete the article
+            fetch(`/articles/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest' // Custom header to indicate AJAX request
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Network response was not ok.');
+            })
+            .then(data => {
+                if (data.success) {
+                    // Reload articles to reflect the deletion
+                    loadArticles(currentPage); // Use current page to reload articles
+                    // Show success message
+                    showSuccessMessage('Article deleted successfully');
+                }
+            })
+            .catch(error => {
+                alert('Error deleting article'); // Show error message if request fails
+                console.error('There was a problem with the fetch operation:', error);
+            });
+        }
+    }
 
 
+
+
+    // ***************************************************
+    //
+    //  LOAD ARTICLES
+    //
+    // ***************************************************
     
     // Function to load articles with pagination
     function loadArticles(page = 1) {
@@ -327,7 +331,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Check if content is a valid URL
                 let contentHtml = '';
                 try {
-
                     // This line attempts to create a new URL object from article.content. If article.content is a valid URL, the new URL() constructor will succeed without throwing an error. If it's not a valid URL, the constructor will throw an error.
                     new URL(article.content);
                     contentHtml = `<img src="${article.content}" alt="Article Image" style="max-width: 100%; height: auto;">`;
@@ -348,6 +351,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 articlesTableBody.appendChild(row); // Add row to the table body
 
+                // Attach event listener to the show button
+                row.querySelector('.showArticleButton').addEventListener('click', function() {
+                    var id = article.id; // Get article ID from data attribute
+                    window.location.href = `/articles/${id}`; // Redirect to the article show page
+                });
+
                 // Attach event listener to the edit button
                 row.querySelector('.editArticleButton').addEventListener('click', function() {
                     showEditModal({
@@ -356,6 +365,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         excerpt: article.excerpt,
                         content: article.content
                     });
+                });
+
+                // Attach event listener to the delete button
+                row.querySelector('.deleteArticleButton').addEventListener('click', function() {
+                    deleteArticle(article.id); // Call the deleteArticle function
                 });
             });
             // Render pagination controls
@@ -369,9 +383,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
-
-
+    // ***************************************************
+    //
+    //  PAGINATION
+    //
+    // ***************************************************
     
     // Function to render pagination controls
     function renderPagination(data) {
@@ -420,8 +436,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
-    
+    // ***************************************************
+    //
+    //  SUCCESS MESSAGES
+    //
+    // ***************************************************
+        
     // Hide success message after a few seconds
     const successMessage = document.getElementById('successMessageRedirect');
     if (successMessage) {
@@ -440,6 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
             successMessageOverlay.classList.add('hidden');
         }, 3000);
     }
+
 });
 
 </script>
