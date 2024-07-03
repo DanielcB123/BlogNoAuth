@@ -111,15 +111,8 @@ class ArticleController extends Controller
     
 
 
-
         // Handle the file upload if a new image is provided
         if ($request->hasFile('content')) {
-            // Delete the old image
-            if ($article->content) {
-                $oldPath = str_replace('/storage', 'public', parse_url($article->content, PHP_URL_PATH));
-                Storage::delete($oldPath);
-            }
-    
             // Store the new image
             $path = $request->file('content')->store('public/articles');
             $article->content = 'http://127.0.0.1:8000' . Storage::url($path); // Update with the new URL
