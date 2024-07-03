@@ -143,10 +143,11 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
-    // Global variable to keep track of the current page
-    let currentPage = 1; // Initial page
-    let sortOrder = 'desc'; // Initial sort order
+    // Global variables to keep track of the current page, sort order, total pages
+    let currentPage = 1; 
+    let sortOrder = 'desc'; 
     let totalPages = 1; 
+
     // Initial load of articles when the page loads
     loadArticles(currentPage);
 
@@ -317,75 +318,82 @@ document.addEventListener('DOMContentLoaded', function() {
     //
     // ***************************************************
     
-    // Function to load articles with pagination
-    // let sortOrder = 'desc'; // Initial sort order
-
     // Function to load articles with pagination and sorting
     function loadArticles(page = 1, sort = 'desc') {
-    currentPage = page; // Update the global currentPage variable
-    sortOrder = sort; // Update the global sortOrder variable
 
-    // Send a GET request to fetch articles with pagination and sorting
-    fetch(`{{ route("articles.data") }}?page=${page}&sort=${sort}`)
-    .then(response => response.json()) // Parse JSON response
-    .then(data => {
-        totalPages = data.last_page; // Update the total pages
-        var articlesTableBody = document.querySelector('#articlesTable tbody');
-        articlesTableBody.innerHTML = ''; // Clear existing table data
-        data.data.forEach(article => {
-            // Create a new table row for each article
-            var row = document.createElement('tr');
+        // Maintaining State: If any action (like sorting) needs to refresh the article list, 
+        // it ensures that the reload happens on the same page the user was viewing before the action.
+        currentPage = page; 
 
-            // Check if content is a valid URL
-            let contentHtml = '';
-            try {
-                new URL(article.content);
-                contentHtml = `<img src="${article.content}" alt="Article Image" style="max-width: 100%; height: auto;">`;
-            } catch (_) {
-                contentHtml = article.content;
-            }
+        // Tracking Sort Order: This keeps track of the current sort order ('asc' for ascending or 'desc' for descending). 
+        // It allows the script to consistently apply the correct sorting when fetching articles.
+        sortOrder = sort; 
 
-            row.innerHTML = `
-                <td class="border px-1 sm:px-4 py-2 text-xs md:text-base"><p class="flex justify-center">${article.id}</p></td>
-                <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${article.title}</td>
-                <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${article.excerpt}</td>
-                <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${contentHtml}</td>
-                <td class="border px-1 sm:px-4 py-2">
-                    <button class="showArticleButton font-semibold text-sky-500 hover:text-sky-600" data-id="${article.id}">Show</button><br>
-                    <button class="editArticleButton font-semibold text-yellow-500 hover:text-yellow-600" data-id="${article.id}">Edit</button><br>
-                    <button class="deleteArticleButton font-semibold text-red-500 hover:text-red-600" data-id="${article.id}">Delete</button>
-                </td>
-            `;
-            articlesTableBody.appendChild(row); // Add row to the table body
+        // Send a GET request to fetch articles with pagination and sorting
+        fetch(`{{ route("articles.data") }}?page=${page}&sort=${sort}`)
+        .then(response => response.json()) // Parse JSON response
+        .then(data => {
+            // Sort Order Adjustment: When toggling the sort order, it allows calculating the new corresponding page number 
+            // in the new sort order. For example, if the user is on page 2 out of 10, toggling the sort order should show the 
+            // corresponding page (9 out of 10 in descending order).
+            totalPages = data.last_page;
+            var articlesTableBody = document.querySelector('#articlesTable tbody');
+            articlesTableBody.innerHTML = ''; // Clear existing table data
+            data.data.forEach(article => {
+                // Create a new table row for each article
+                var row = document.createElement('tr');
 
-            // Attach event listener to the show button
-            row.querySelector('.showArticleButton').addEventListener('click', function() {
-                var id = article.id; // Get article ID from data attribute
-                window.location.href = `/articles/${id}`; // Redirect to the article show page
-            });
+                // Check if content is a valid URL
+                let contentHtml = '';
+                try {
+                    new URL(article.content);
+                    contentHtml = `<img src="${article.content}" alt="Article Image" style="max-width: 100%; height: auto;">`;
+                } catch (_) {
+                    contentHtml = article.content;
+                }
 
-            // Attach event listener to the edit button
-            row.querySelector('.editArticleButton').addEventListener('click', function() {
-                showEditModal({
-                    id: article.id,
-                    title: article.title,
-                    excerpt: article.excerpt,
-                    content: article.content
+                row.innerHTML = `
+                    <td class="border px-1 sm:px-4 py-2 text-xs md:text-base"><p class="flex justify-center">${article.id}</p></td>
+                    <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${article.title}</td>
+                    <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${article.excerpt}</td>
+                    <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${contentHtml}</td>
+                    <td class="border px-1 sm:px-4 py-2">
+                        <button class="showArticleButton font-semibold text-sky-500 hover:text-sky-600" data-id="${article.id}">Show</button><br>
+                        <button class="editArticleButton font-semibold text-yellow-500 hover:text-yellow-600" data-id="${article.id}">Edit</button><br>
+                        <button class="deleteArticleButton font-semibold text-red-500 hover:text-red-600" data-id="${article.id}">Delete</button>
+                    </td>
+                `;
+                articlesTableBody.appendChild(row); // Add row to the table body
+
+                // Attach event listener to the show button
+                row.querySelector('.showArticleButton').addEventListener('click', function() {
+                    var id = article.id; // Get article ID from data attribute
+                    window.location.href = `/articles/${id}`; // Redirect to the article show page
+                });
+
+                // Attach event listener to the edit button
+                row.querySelector('.editArticleButton').addEventListener('click', function() {
+                    showEditModal({
+                        id: article.id,
+                        title: article.title,
+                        excerpt: article.excerpt,
+                        content: article.content
+                    });
+                });
+
+                // Attach event listener to the delete button
+                row.querySelector('.deleteArticleButton').addEventListener('click', function() {
+                    deleteArticle(article.id); // Call the deleteArticle function
                 });
             });
-
-            // Attach event listener to the delete button
-            row.querySelector('.deleteArticleButton').addEventListener('click', function() {
-                deleteArticle(article.id); // Call the deleteArticle function
-            });
+            // Render pagination controls
+            renderPagination(data);
+        })
+        .catch(error => {
+            alert('Error loading articles'); // Show error message if request fails
         });
-        // Render pagination controls
-        renderPagination(data);
-    })
-    .catch(error => {
-        alert('Error loading articles'); // Show error message if request fails
-    });
-}
+    }
+
     // Function to toggle sort order and reload articles
     function toggleSortOrder() {
         // Calculate the corresponding page number in the new sort order
@@ -393,7 +401,6 @@ document.addEventListener('DOMContentLoaded', function() {
         sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
         loadArticles(newPage, sortOrder);
     }
-
 
     // Attach event listener to the ID column header
     document.getElementById('idColumnHeader').addEventListener('click', toggleSortOrder);
