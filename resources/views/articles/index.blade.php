@@ -28,7 +28,7 @@
         <table id="articlesTable" class="min-w-full bg-white">
             <thead class="bg-gray-800 text-white">
                 <tr>
-                    <th class="w-1/12 px-2 sm:px-4 py-2">ID</th>
+                    <th id="idColumnHeader" class="w-1/12 px-2 sm:px-4 py-2 cursor-pointer">ID <i id="sortIcon" class="fas fa-sort"></i></th>
                     <th class="w-1/5 px-2 sm:px-4 py-2">Title</th>
                     <th class="w-1/5 px-2 sm:px-4 py-2">Excerpt</th>
                     <th class="w-1/5 px-2 sm:px-4 py-2">Content</th>
@@ -40,6 +40,7 @@
             </tbody>
         </table>
     </div>
+
 
 
 
@@ -143,8 +144,9 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     // Global variable to keep track of the current page
-    let currentPage = 1;
-
+    let currentPage = 1; // Initial page
+    let sortOrder = 'desc'; // Initial sort order
+    let totalPages = 1; 
     // Initial load of articles when the page loads
     loadArticles(currentPage);
 
@@ -316,69 +318,86 @@ document.addEventListener('DOMContentLoaded', function() {
     // ***************************************************
     
     // Function to load articles with pagination
-    function loadArticles(page = 1) {
-        currentPage = page; // Update the global currentPage variable
-        // Send a GET request to fetch articles with pagination
-        fetch('{{ route("articles.data") }}' + `?page=${page}`)
-        .then(response => response.json()) // Parse JSON response
-        .then(data => {
-            var articlesTableBody = document.querySelector('#articlesTable tbody');
-            articlesTableBody.innerHTML = ''; // Clear existing table data
-            data.data.forEach(article => {
-                // Create a new table row for each article
-                var row = document.createElement('tr');
+    // let sortOrder = 'desc'; // Initial sort order
 
-                // Check if content is a valid URL
-                let contentHtml = '';
-                try {
-                    // This line attempts to create a new URL object from article.content. If article.content is a valid URL, the new URL() constructor will succeed without throwing an error. If it's not a valid URL, the constructor will throw an error.
-                    new URL(article.content);
-                    contentHtml = `<img src="${article.content}" alt="Article Image" style="max-width: 100%; height: auto;">`;
-                } catch (_) {
-                    contentHtml = article.content;
-                }
+    // Function to load articles with pagination and sorting
+    function loadArticles(page = 1, sort = 'desc') {
+    currentPage = page; // Update the global currentPage variable
+    sortOrder = sort; // Update the global sortOrder variable
 
-                row.innerHTML = `
-                    <td class="border px-1 sm:px-4 py-2 text-xs md:text-base"><p class="flex justify-center">${article.id}</p></td>
-                    <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${article.title}</td>
-                    <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${article.excerpt}</td>
-                    <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${contentHtml}</td>
-                    <td class="border px-1 sm:px-4 py-2">
-                        <button class="showArticleButton font-semibold text-sky-500 hover:text-sky-600" data-id="${article.id}">Show</button><br>
-                        <button class="editArticleButton font-semibold text-yellow-500 hover:text-yellow-600" data-id="${article.id}">Edit</button><br>
-                        <button class="deleteArticleButton font-semibold text-red-500 hover:text-red-600" data-id="${article.id}">Delete</button>
-                    </td>
-                `;
-                articlesTableBody.appendChild(row); // Add row to the table body
+    // Send a GET request to fetch articles with pagination and sorting
+    fetch(`{{ route("articles.data") }}?page=${page}&sort=${sort}`)
+    .then(response => response.json()) // Parse JSON response
+    .then(data => {
+        totalPages = data.last_page; // Update the total pages
+        var articlesTableBody = document.querySelector('#articlesTable tbody');
+        articlesTableBody.innerHTML = ''; // Clear existing table data
+        data.data.forEach(article => {
+            // Create a new table row for each article
+            var row = document.createElement('tr');
 
-                // Attach event listener to the show button
-                row.querySelector('.showArticleButton').addEventListener('click', function() {
-                    var id = article.id; // Get article ID from data attribute
-                    window.location.href = `/articles/${id}`; // Redirect to the article show page
-                });
+            // Check if content is a valid URL
+            let contentHtml = '';
+            try {
+                new URL(article.content);
+                contentHtml = `<img src="${article.content}" alt="Article Image" style="max-width: 100%; height: auto;">`;
+            } catch (_) {
+                contentHtml = article.content;
+            }
 
-                // Attach event listener to the edit button
-                row.querySelector('.editArticleButton').addEventListener('click', function() {
-                    showEditModal({
-                        id: article.id,
-                        title: article.title,
-                        excerpt: article.excerpt,
-                        content: article.content
-                    });
-                });
+            row.innerHTML = `
+                <td class="border px-1 sm:px-4 py-2 text-xs md:text-base"><p class="flex justify-center">${article.id}</p></td>
+                <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${article.title}</td>
+                <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${article.excerpt}</td>
+                <td class="border px-1 sm:px-4 py-2 text-xs md:text-base">${contentHtml}</td>
+                <td class="border px-1 sm:px-4 py-2">
+                    <button class="showArticleButton font-semibold text-sky-500 hover:text-sky-600" data-id="${article.id}">Show</button><br>
+                    <button class="editArticleButton font-semibold text-yellow-500 hover:text-yellow-600" data-id="${article.id}">Edit</button><br>
+                    <button class="deleteArticleButton font-semibold text-red-500 hover:text-red-600" data-id="${article.id}">Delete</button>
+                </td>
+            `;
+            articlesTableBody.appendChild(row); // Add row to the table body
 
-                // Attach event listener to the delete button
-                row.querySelector('.deleteArticleButton').addEventListener('click', function() {
-                    deleteArticle(article.id); // Call the deleteArticle function
+            // Attach event listener to the show button
+            row.querySelector('.showArticleButton').addEventListener('click', function() {
+                var id = article.id; // Get article ID from data attribute
+                window.location.href = `/articles/${id}`; // Redirect to the article show page
+            });
+
+            // Attach event listener to the edit button
+            row.querySelector('.editArticleButton').addEventListener('click', function() {
+                showEditModal({
+                    id: article.id,
+                    title: article.title,
+                    excerpt: article.excerpt,
+                    content: article.content
                 });
             });
-            // Render pagination controls
-            renderPagination(data);
-        })
-        .catch(error => {
-            alert('Error loading articles'); // Show error message if request fails
+
+            // Attach event listener to the delete button
+            row.querySelector('.deleteArticleButton').addEventListener('click', function() {
+                deleteArticle(article.id); // Call the deleteArticle function
+            });
         });
+        // Render pagination controls
+        renderPagination(data);
+    })
+    .catch(error => {
+        alert('Error loading articles'); // Show error message if request fails
+    });
+}
+    // Function to toggle sort order and reload articles
+    function toggleSortOrder() {
+        // Calculate the corresponding page number in the new sort order
+        let newPage = totalPages - currentPage + 1;
+        sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+        loadArticles(newPage, sortOrder);
     }
+
+
+    // Attach event listener to the ID column header
+    document.getElementById('idColumnHeader').addEventListener('click', toggleSortOrder);
+
 
 
 
@@ -400,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
             prevButton.textContent = 'Previous';
             prevButton.className = 'mx-1 px-1 md:px-3 py-1 rounded bg-gray-300';
             prevButton.addEventListener('click', function() {
-                loadArticles(data.current_page - 1);
+                loadArticles(data.current_page - 1, sortOrder); // Pass current sort order
             });
             paginationControls.appendChild(prevButton);
         }
@@ -414,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 pageButton.className += ' bg-gray-500 text-white';
             }
             pageButton.addEventListener('click', function() {
-                loadArticles(page);
+                loadArticles(page, sortOrder); // Pass current sort order
             });
             paginationControls.appendChild(pageButton);
         }
@@ -425,11 +444,12 @@ document.addEventListener('DOMContentLoaded', function() {
             nextButton.textContent = 'Next';
             nextButton.className = 'mx-1 px-1 md:px-3 py-1 rounded bg-gray-300';
             nextButton.addEventListener('click', function() {
-                loadArticles(data.current_page + 1);
+                loadArticles(data.current_page + 1, sortOrder); // Pass current sort order
             });
             paginationControls.appendChild(nextButton);
         }
     }
+
 
 
 

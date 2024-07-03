@@ -30,13 +30,14 @@ class ArticleController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getArticles()
+    public function getArticles(Request $request)
     {
         // Laravel's paginate method automatically handles 
         // the page query parameter when it exists in the request. When Article::paginate(5) 
         // is called, Laravel internally checks for the page query parameter and fetches the 
         // appropriate records for that page.
-        $articles = Article::paginate(5); 
+        $sort = $request->get('sort', 'desc'); // Default to descending order
+        $articles = Article::orderBy('id', $sort)->paginate(5); 
         return response()->json($articles);
     }
 
