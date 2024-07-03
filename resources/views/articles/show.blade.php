@@ -31,6 +31,33 @@
             </dl>
         </div>
     </div>
+
+
+    <div class="my-4">
+        <h2 class="text-xl mb-4">Comments</h2>
+        <div id="comments">
+            @foreach($article->comments as $comment)
+            <div class="bg-gray-100 p-4 rounded-lg mb-4">
+                {{ $comment->body }}
+            </div>
+            @endforeach
+        </div>
+
+        <form id="commentForm">
+            @csrf
+            <div class="">
+                <label for="body" class="sr-only">Comment</label>
+                <textarea name="body" id="body" rows="3" class="w-full p-2 border rounded-md" placeholder="Add a comment..."></textarea>
+            </div>
+            <div class="w-full flex justify-end px-2 sm:px-0">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded mt-3">Submit</button>
+            </div>
+            
+        </form>
+    </div>
+
+    <hr>
+
     <div class="mt-4 flex justify-center space-x-4">
         <a href="{{ route('articles.index') }}" class="bg-blue-500 text-white text-sm md:text-base px-4 py-2 rounded">Back to Articles</a>
         <button id="editButton" class="bg-yellow-500 text-white text-sm md:text-base px-4 py-2 rounded">Edit Article</button>
@@ -59,6 +86,48 @@ document.addEventListener('DOMContentLoaded', function() {
     const excerptField = document.getElementById('excerpt'); // Textarea for the article excerpt
     const newContentField = document.getElementById('newContent'); // Input field for uploading a new image
     const contentImage = document.getElementById('contentImage'); // Image element to display the current article content image
+
+
+
+
+
+
+
+
+
+    const commentForm = document.getElementById('commentForm');
+    const commentsDiv = document.getElementById('comments');
+
+    commentForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(commentForm);
+
+        fetch('{{ route("comments.store", $article) }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const newComment = document.createElement('div');
+                newComment.classList.add('bg-gray-100', 'p-4', 'rounded-lg', 'mb-4');
+                newComment.textContent = data.comment.body;
+                commentsDiv.appendChild(newComment);
+                commentForm.reset();
+            } else {
+                alert('Error adding comment');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error adding comment');
+        });
+    });
 
 
 

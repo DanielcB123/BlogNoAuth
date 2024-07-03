@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\CommentController;
+
 
 // Redirect the root URL to the articles index route
 Route::get('/', function () {
@@ -26,3 +28,5 @@ Route::get('/articles/{article}', [ArticleController::class, 'show'])->name('art
 
 // Route for deleting a specific article
 Route::delete('/articles/{article}', [ArticleController::class, 'destroy'])->name('articles.destroy');
+
+Route::post('/articles/{article}/comments', [CommentController::class, 'store'])->name('comments.store');
