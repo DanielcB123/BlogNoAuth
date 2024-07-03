@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Send a POST request to update the article
         fetch('{{ route("articles.update", $article->id) }}', {
             method: 'POST',
-            body: formData // Use FormData to send the file
+            body: formData
         })
         .then(response => response.json()) // Parse JSON response
         .then(data => {
