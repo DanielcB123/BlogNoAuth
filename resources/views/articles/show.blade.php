@@ -117,7 +117,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 const newComment = document.createElement('div');
                 newComment.classList.add('bg-gray-100', 'p-4', 'rounded-lg', 'mb-4');
-                newComment.textContent = data.comment.body;
+
+                const timestamp = document.createElement('div');
+                timestamp.classList.add('text-sm', 'text-gray-500');
+                timestamp.textContent = data.comment.formatted_created_at;
+
+                const commentBody = document.createElement('div');
+                commentBody.textContent = data.comment.body;
+
+                newComment.appendChild(timestamp);
+                newComment.appendChild(commentBody);
+
                 commentsDiv.appendChild(newComment);
                 commentForm.reset();
             } else {
